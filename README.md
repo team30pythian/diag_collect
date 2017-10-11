@@ -42,8 +42,11 @@ Package
 COLLECTOR
 
 FUNCTION CHECK_SESSIONS RETURNS NUMBER
+
 PROCEDURE CHECK_SESSIONS
+
 PROCEDURE COLLECT_DATA
+
 PROCEDURE CREATE_JOBS
 Argument Name Type In/Out Default?
 ------------------------------ ----------------------- ------ --------
@@ -51,21 +54,25 @@ CHECKINTERVALSECS NUMBER IN DEFAULT
 PURGEINTERVALDAYS NUMBER IN DEFAULT
 CHECKJOB BOOLEAN IN DEFAULT
 PURGEJOB BOOLEAN IN DEFAULT
+
 PROCEDURE DISABLE_JOBS
 Argument Name Type In/Out Default?
 ------------------------------ ----------------------- ------ --------
 CHECKJOB BOOLEAN IN DEFAULT
 PURGEJOB BOOLEAN IN DEFAULT
+
 PROCEDURE DROP_JOBS
 Argument Name Type In/Out Default?
 ------------------------------ ----------------------- ------ --------
 CHECKJOB BOOLEAN IN DEFAULT
 PURGEJOB BOOLEAN IN DEFAULT
+
 PROCEDURE ENABLE_JOBS
 Argument Name Type In/Out Default?
 ------------------------------ ----------------------- ------ --------
 CHECKJOB BOOLEAN IN DEFAULT
 PURGEJOB BOOLEAN IN DEFAULT
+
 PROCEDURE PURGE_DATA
 Argument Name Type In/Out Default?
 ------------------------------ ----------------------- ------ --------
