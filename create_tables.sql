@@ -2,6 +2,15 @@
 -- 
 -- SQL to install DIAG_COLLECT schema - tables
 --
+-- History
+--
+-- Version 1.0         Create 11 Oct 2017 - Luke
+--
+-- Version 1.1         Added on 13 Nov 2017 - Luke
+--                     Added tables
+--                       collect_latchholders
+--                       collect_mutex_sleep_history
+--
 ----------------------------------------------------------
 
 
@@ -73,7 +82,7 @@ SELECT *
 
 CREATE INDEX collect_sql_plans_idx ON collect_sql_plans ( sql_id, plan_hash_value );
 
-ALTER TABLE collect_sql_plans ADD CONSTRAINT collect_sql_plan_fk FOREIGN KEY ( sql_id, plan_hash_value ) REFERENCES collect_sql ( sql_id , plan_hash_value );
+ALTER TABLE collect_sql_plans ADD CONSTRAINT collect_sql_plan_fk FOREIGN KEY ( sql_id, plan_hash_value ) REFERENCES collect_sql ( sql_id , plan_hash_value ) ON DELETE CASCADE;
 
 
 -- Collector Session Stats table
@@ -104,4 +113,32 @@ SELECT 1 collect_id
 ALTER TABLE collect_session_events ADD CONSTRAINT collect_session_events_pk PRIMARY KEY ( collect_id , inst_id , sid , event );
 
 ALTER TABLE collect_session_events ADD CONSTRAINT collect_session_events_fk FOREIGN KEY ( collect_id, inst_id , sid ) REFERENCES collect_sessions ( collect_id,inst_id,sid ) ON DELETE CASCADE;
+
+-- Collector Latch Holder table
+
+CREATE TABLE collect_latchholders
+AS
+SELECT 1 collect_id
+     , s.*
+  FROM gv$latchholder s
+ WHERE 1=0
+/
+
+ALTER TABLE collect_latchholders ADD CONSTRAINT collect_latchholders_pk PRIMARY KEY ( collect_id , inst_id , pid , sid );
+
+ALTER TABLE collect_latchholders ADD CONSTRAINT collect_latchholders_fk FOREIGN KEY ( collect_id ) REFERENCES collect_snaps ( collect_id ) ON DELETE CASCADE;
+
+-- Collector Nutex Sleep History
+
+CREATE TABLE collect_mutex_sleep_history
+AS
+SELECT 1 collect_id
+     , s.*
+  FROM gv$mutex_sleep_history s
+ WHERE 1=0
+/
+
+CREATE INDEX collect_mutex_sleep_history_ix ON collect_mutex_sleep_history ( collect_id , inst_id , mutex_identifier , sleep_timestamp );
+
+ALTER TABLE collect_mutex_sleep_history ADD CONSTRAINT collect_mutex_sleep_history_fk FOREIGN KEY ( collect_id ) REFERENCES collect_snaps ( collect_id ) ON DELETE CASCADE;
 
