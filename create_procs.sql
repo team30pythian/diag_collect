@@ -2,9 +2,16 @@
 -- 
 -- SQL to install DIAG_COLLECT schema - packages etc
 -- 
+-- Version 1.0         Create 11 Oct 2017 - Luke
+--
+-- Version 1.1         Added on 13 Nov 2017 - Luke
+--                     Added procedures
+--                       collect_latchholders
+--                       collect_mutex_sleep_history
+--
 ----------------------------------------------------------
 
-CREATE OR REPLACE PACKAGE collector
+CREATE OR REPLACE PACKAGE diag_collect.collector
 AS
         CheckJobName VARCHAR2(30) := 'DIAG_COLLECT_CHECK';
         PurgeJobName VARCHAR2(30) := 'DIAG_COLLECT_PURGE';
@@ -45,7 +52,7 @@ END;
 /
 
 
-CREATE OR REPLACE PACKAGE BODY collector
+CREATE OR REPLACE PACKAGE BODY diag_collect.collector
 AS
         ObjCount NUMBER;
         
@@ -846,6 +853,72 @@ AS
                                           )
                    AND   VALUE > 0;                
         END collect_stats;        
+
+        PROCEDURE collect_latchholders (
+                  CollectID collect_snaps.collect_id%TYPE
+        ) IS
+        BEGIN
+                INSERT INTO collect_latchholders (
+                           collect_id
+                         , inst_id
+                         , pid    
+                         , sid    
+                         , laddr  
+                         , name   
+                         , gets 
+                ) 
+                SELECT     CollectID
+                         , inst_id
+                         , pid    
+                         , sid    
+                         , laddr  
+                         , name   
+                         , gets 
+                  FROM   gv$latchholder;
+        END collect_latchholders;
+                        
+        PROCEDURE collect_mutex_sleep_history (
+                  CollectID collect_snaps.collect_id%TYPE
+        ) IS
+        BEGIN
+                INSERT INTO collect_mutex_sleep_history (
+                           collect_id
+                         , inst_id           
+                         , mutex_identifier  
+                         , sleep_timestamp   
+                         , mutex_type        
+                         , gets              
+                         , sleeps            
+                         , requesting_session
+                         , blocking_session  
+                         , location          
+                         , mutex_value       
+                         , p1                
+                         , p1raw             
+                         , p2                
+                         , p3                
+                         , p4                
+                         , p5 
+                )
+                SELECT     CollectID
+                         , inst_id           
+                         , mutex_identifier  
+                         , sleep_timestamp   
+                         , mutex_type        
+                         , gets              
+                         , sleeps            
+                         , requesting_session
+                         , blocking_session  
+                         , location          
+                         , mutex_value       
+                         , p1                
+                         , p1raw             
+                         , p2                
+                         , p3                
+                         , p4                
+                         , p5 
+                  FROM   gv$mutex_sleep_history;
+        END collect_mutex_sleep_history;
         
         PROCEDURE collect_data
         IS
@@ -862,6 +935,10 @@ AS
                 collect_events(CollectID);
 
                 collect_stats(CollectID);
+
+                collect_latchholders(CollectID);
+
+                collect_mutex_sleep_history(CollectID);
 
                 COMMIT;
         END collect_data;
